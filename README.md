@@ -1,5 +1,3 @@
----
-
 # Docker Bbox (Fork of Docker-Livebox)
 
 * **Original Source**: [Raraph84/docker-livebox](https://github.com/Raraph84/docker-livebox)
@@ -67,5 +65,3 @@ This project is a fork adapted from work of:
 ## License
 
 This project is provided as-is for educational and personal use.
-
----
