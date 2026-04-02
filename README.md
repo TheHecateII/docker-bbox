@@ -66,4 +66,6 @@ docker build -t bbox .
 
 ## Acknowledgments
 
-Thanks to the [lafibre.info](https://lafibre.info/) community for their documentation on replacing the BBox.
+- [lafibre.info](https://lafibre.info/) community for their documentation on replacing the BBox
+- [Raraph84/docker-livebox](https://github.com/Raraph84/docker-livebox) — original project this is based on
+- [Raraph84/dhclient-orange-patched](https://github.com/Raraph84/dhclient-orange-patched) — patched dhclient fixing CoS tagging at socket level
