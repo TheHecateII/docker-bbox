@@ -1,0 +1,9 @@
+option dhcp6.vendorclass        code 16 = string;
+option dhcp6.userclass          code 15 = string;
+option dhcp6.auth               code 11 = string;
+
+send dhcp6.vendorclass ${VENDOR_CLASS_IDENTIFIER_6};
+send dhcp6.userclass ${USER_CLASS_6};
+send dhcp6.auth $AUTHENTICATION_STR;
+
+request dhcp6.auth, dhcp6.vendorclass, dhcp6.userclass;

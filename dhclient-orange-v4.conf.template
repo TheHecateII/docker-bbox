@@ -1,0 +1,9 @@
+option user-class       code 77 = string;
+option authentication   code 90 = string;
+
+send dhcp-parameter-request-list 1, 3, 6, 15, 28, 51, 58, 59, 90, 119, 120, 125;
+#send dhcp-parameter-request-list 1, 3, 28, 51, 58, 59, 90, 120, 125;
+send vendor-class-identifier "${VENDOR_CLASS_IDENTIFIER_4}";
+send dhcp-client-identifier = hardware;
+send user-class "${USER_CLASS_4}";
+send authentication ${AUTHENTICATION_STR};
