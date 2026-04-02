@@ -1,25 +1,29 @@
 # Docker BBox
 
-A simple Docker image that transforms your host into a Bouygues Telecom BBox, allowing you to bypass the BBox router and use your own hardware with Bouygues fiber (FTTH) in France.
+A Docker image that transforms your host into a Bouygues Telecom BBox, allowing you to bypass the BBox router and use your own hardware with Bouygues fiber (FTTH) in France.
 
-## Overview
+## What it does
 
-This Docker container handles the connection process with Bouygues Telecom's network infrastructure by:
+- Creates a VLAN 100 interface on the WAN interface
+- Applies CoS 6 priority to DHCP and ICMPv6 traffic (required for stable IP assignment)
+- Sends DHCP Option 60 `BYGTELIAD` and optionally Option 125 (device fingerprint)
+- Optionally clones the BBox MAC address
+- Obtains an IPv4 address and IPv6 prefix delegation (/60)
+- Sets up NAT and forwarding between LAN and WAN
 
-- Creating and configuring a VLAN 100 interface on your WAN interface
-- Sending the required DHCP Option 60 (`BYGTELIAD`) vendor identifier
-- Optionally cloning your BBox MAC address for seamless IP assignment
-- Obtaining IPv4 and IPv6 addresses via DHCPv4 and DHCPv6
-- Setting up NAT and forwarding rules for your LAN
+## Limitations
+
+- **TV not supported** — Bouygues TV requires IGMP Proxy configuration which is not handled by this container
+- **VoIP not supported** — Bouygues does not provide SIP credentials to third-party equipment
 
 ## Requirements
 
 - A Linux host with Docker installed
-- Two network interfaces (one for LAN, one for WAN connected to the ONT)
-- The MAC address of your BBox (recommended, for a smooth transition)
-- The container must run in privileged mode with host networking
+- Two network interfaces (LAN and WAN connected to the ONT)
+- The MAC address of your BBox (recommended)
+- `--privileged` mode and `--network host`
 
-## Quick Start
+## Usage
 
 ```bash
 docker run -d \
@@ -37,49 +41,31 @@ docker run -d \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BBOX_MAC` | *(empty)* | MAC address of your BBox to clone (recommended) |
-| `LAN_INTERFACE` | `eth0` | The network interface connected to your local network |
-| `WAN_INTERFACE` | `eth1` | The network interface connected to the ONT |
-| `LAN_SUBNET` | `192.168.1.0/24` | Your local network subnet for NAT masquerading |
+| `BBOX_MAC` | *(empty)* | WAN MAC address of your BBox (label on the back) |
+| `LAN_INTERFACE` | `eth0` | LAN-side network interface |
+| `WAN_INTERFACE` | `eth1` | WAN-side network interface (connected to the ONT) |
+| `LAN_SUBNET` | `192.168.1.0/24` | LAN subnet for NAT masquerading |
 | `MTU` | `1500` | MTU for the VLAN interface |
+| `BBOX_DEVICE_ID` | *(empty)* | Option 125 sub-option 1 (e.g. `001BBF`) |
+| `BBOX_SERIAL` | *(empty)* | Option 125 sub-option 2 (e.g. `124235801379499`) |
+| `BBOX_HW_VERSION` | *(empty)* | Option 125 sub-option 3 (e.g. `5330b-r1`) |
 
-## How to Get Your BBox MAC Address
+`BBOX_DEVICE_ID`, `BBOX_SERIAL` and `BBOX_HW_VERSION` are all required together to include Option 125. If any is missing, Option 125 is omitted. These values can be found by capturing the BBox DHCP traffic before replacing it.
 
-Look on the label on the back of your BBox — it is listed as the WAN MAC address. Alternatively, check your Bouygues account or the BBox admin interface before switching.
-
-## How It Works
-
-1. **VLAN Setup**: Creates a VLAN 100 interface on the WAN interface (required by Bouygues)
-2. **MAC Cloning**: Optionally sets the VLAN interface MAC to your BBox's MAC address
-3. **QoS Configuration**: Sets up nftables rules to add CoS 6 priority for DHCP traffic (strongly recommended by Bouygues)
-4. **DHCP**: Sends Option 60 `BYGTELIAD` and obtains an IPv4 address and IPv6 prefix delegation
-5. **NAT/Forwarding**: Configures iptables rules for NAT and packet forwarding between LAN and WAN
-
-## Network Setup
-
-```
-[Your Devices] <---> [LAN Interface] <---> [Docker Host] <---> [WAN Interface] <---> [ONT] <---> [Bouygues Network]
-```
-
-## Building from Source
+## Build
 
 ```bash
-git clone <this-repo>
-cd docker-livebox
 docker build -t bbox .
 ```
 
-## Notes
+## Network topology
 
-- This container requires `--privileged` mode to manage network interfaces and iptables rules
-- Host networking (`--network host`) is required to access and configure the host's network interfaces
-- No Bouygues credentials are required — authentication is handled via DHCP Option 60 and MAC cloning
-- VoIP is not supported: Bouygues Telecom does not provide SIP credentials to third-party equipment
+```
+[Devices] <---> [LAN Interface] <---> [Docker Host] <---> [WAN Interface] <---> [ONT] <---> [Bouygues]
+```
 
 ## Acknowledgments
 
-Special thanks to the **[lafibre.info](https://lafibre.info/)** community for their documentation on replacing the BBox with personal equipment.
-
-## License
-
-This project is provided as-is for educational and personal use.
+- [lafibre.info](https://lafibre.info/) community for their documentation on replacing the BBox
+- [Raraph84/docker-livebox](https://github.com/Raraph84/docker-livebox) — original project this is based on
+- [Raraph84/dhclient-orange-patched](https://github.com/Raraph84/dhclient-orange-patched) — patched dhclient fixing CoS tagging at socket level
