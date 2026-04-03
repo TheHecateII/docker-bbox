@@ -5,11 +5,15 @@ A Docker image that transforms your host into a Bouygues Telecom BBox, allowing 
 ## What it does
 
 - Creates a VLAN 100 interface on the WAN interface
-- Applies CoS 6 priority to DHCP and ICMPv6 traffic (required for stable IP assignment)
+- Applies CoS 6 priority to DHCP traffic (required for stable IP assignment)
 - Sends DHCP Option 60 `BYGTELIAD` and optionally Option 125 (device fingerprint)
 - Optionally clones the BBox MAC address
 - Obtains an IPv4 address and IPv6 prefix delegation (/60)
 - Sets up NAT and forwarding between LAN and WAN
+
+## Hypervisor compatibility
+
+When running on a hypervisor such as **Proxmox**, virtual network cards using the **VirtIO** driver may rewrite the source IP of outgoing DHCP requests, causing the DHCP exchange to fail. If you encounter DHCP issues in a virtualized environment, switch the WAN NIC model to **Intel E1000** instead.
 
 ## Limitations
 
