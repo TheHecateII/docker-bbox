@@ -1,4 +1,6 @@
-# Docker BBox
+<p align="center">
+  <img width="500" height="500" src="https://github.com/user-attachments/assets/8c42cbdc-f317-4d2b-a72e-6097a781e043" />
+</p>
 
 A Docker image that transforms your host into a Bouygues Telecom BBox, allowing you to bypass the BBox router and use your own hardware with Bouygues fiber (FTTH) in France.
 
