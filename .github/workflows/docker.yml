@@ -11,7 +11,7 @@ on:
       - main
 
 env:
-  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/livebox
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/docker-bbox
 
 jobs:
   build-and-push:
