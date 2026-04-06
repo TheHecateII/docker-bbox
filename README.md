@@ -31,6 +31,8 @@ When running on a hypervisor such as **Proxmox**, virtual network cards using th
 
 ## Usage
 
+> ⚠️ **WARNING:** > Before starting, please ensure that the **IP Full-Stack** option is enabled in your customer portal. If it is not, your connection will use **MAP-T** or **CGNAT**, which will prevent this standard DHCP configuration from working properly.
+
 ```bash
 docker run -d \
   --name bbox \
