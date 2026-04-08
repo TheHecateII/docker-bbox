@@ -32,6 +32,8 @@ There is a bug in the Linux kernel affecting nftables `netdev egress` hooks on V
 - Use bare metal with an Intel NIC or compatible USB Ethernet adapter
 - If virtualized: Switch the WAN NIC model to **Intel E1000** instead of VirtIO
 
+> 🧪 **Experimental:** A hard patch using an eBPF TC egress program is currently being tested. It intercepts outgoing DHCP packets and corrects the corrupted source address before transmission, allowing the image to run on affected drivers (VirtIO, bcmgenet) without changing hardware. This may become the default fix once validated.
+
 A bug report has been submitted to the netfilter developers.
 
 ## Limitations
