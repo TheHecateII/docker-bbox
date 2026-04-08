@@ -4,6 +4,10 @@
 
 A Docker image that transforms your host into a Bouygues Telecom BBox, allowing you to bypass the BBox router and use your own hardware with Bouygues fiber (FTTH) in France.
 
+## ⚠️ Recommended: Bare Metal with compatible hardware
+
+For the moment, **bare metal installation with compatible hardware is recommended**. Certain environments may encounter issues with DHCP packet handling (see [Hardware compatibility](#hardware-compatibility) below).
+
 ## What it does
 
 - Creates a VLAN 100 interface on the WAN interface
@@ -13,9 +17,22 @@ A Docker image that transforms your host into a Bouygues Telecom BBox, allowing 
 - Obtains an IPv4 address and IPv6 prefix delegation (/60)
 - Sets up NAT and forwarding between LAN and WAN
 
-## Hypervisor compatibility
+## Hardware compatibility
 
-When running on a hypervisor such as **Proxmox**, virtual network cards using the **VirtIO** driver may rewrite the source IP of outgoing DHCP requests, causing the DHCP exchange to fail. If you encounter DHCP issues in a virtualized environment, switch the WAN NIC model to **Intel E1000** instead.
+There is a bug in the Linux kernel affecting nftables `netdev egress` hooks on VLAN interfaces with certain network drivers. The DHCP wildcard address shifts from `0.0.0.0` to `0.0.255.255`, which Bouygues rejects (Orange is more permissive and responds anyway).
+
+**Affected drivers:**
+- **VirtIO** — Virtual NICs on Proxmox, QEMU, KVM, etc.
+- **bcmgenet** — Raspberry Pi 4 and 5 built-in Ethernet
+
+**Not affected:**
+- **Intel E1000/E1000e** — Physical or emulated Intel NICs
+
+**Workarounds:**
+- Use bare metal with an Intel NIC or compatible USB Ethernet adapter
+- If virtualized: Switch the WAN NIC model to **Intel E1000** instead of VirtIO
+
+A bug report has been submitted to the netfilter developers.
 
 ## Limitations
 
@@ -31,7 +48,7 @@ When running on a hypervisor such as **Proxmox**, virtual network cards using th
 
 ## Usage
 
-> ⚠️ **WARNING:** > Before starting, please ensure that the **IP Full-Stack** option is enabled in your customer portal. If it is not, your connection will use **MAP-T** or **CGNAT**, which will prevent this standard DHCP configuration from working properly.
+> ⚠️ **WARNING:** Before starting, please ensure that the **IP Full-Stack** option is enabled in your customer portal. If it is not, your connection will use **MAP-T** or **CGNAT**, which will prevent this standard DHCP configuration from working properly.
 
 ```bash
 docker run -d \
@@ -64,12 +81,6 @@ docker run -d \
 
 ```bash
 docker build -t bbox .
-```
-
-## Network topology
-
-```
-[Devices] <---> [LAN Interface] <---> [Docker Host] <---> [WAN Interface] <---> [ONT] <---> [Bouygues]
 ```
 
 ## Acknowledgments
