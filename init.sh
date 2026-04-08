@@ -19,6 +19,12 @@ nft insert "rule netdev filter egress udp dport 547 meta priority set 0:6 ip6 ds
 nft add rule netdev filter egress ip dscp set 0
 nft add rule netdev filter egress ip6 dscp set 0
 
+# Workaround bug kernel : nftables netdev egress corrompt l'IP source des
+# paquets DHCP sur VLAN (VirtIO/bcmgenet) — saddr passe de 0.0.0.0 à 0.0.255.255.
+# Le programme eBPF TC s'exécute après nftables dans le pipeline et corrige le paquet.
+tc qdisc add dev $WAN_INTERFACE.100 clsact
+tc filter add dev $WAN_INTERFACE.100 egress bpf da obj /opt/ebpf/fix_dhcp.bpf.o sec tc
+
 iptables -D FORWARD -i $LAN_INTERFACE -o $LAN_INTERFACE -j ACCEPT || true
 iptables -A FORWARD -i $LAN_INTERFACE -o $LAN_INTERFACE -j ACCEPT
 iptables -D FORWARD -i $LAN_INTERFACE -o $WAN_INTERFACE.100 -j ACCEPT || true
